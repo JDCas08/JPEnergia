@@ -4,11 +4,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 
 public class Modelo {
-
-
-
 
     public static class Cliente {
         private String numeroUnicoIdentificacion;
@@ -77,9 +75,23 @@ public class Modelo {
         public int hashCode() {
             return Objects.hash(numeroUnicoIdentificacion);
         }
+
+        // Método: Cargar consumos automáticos para este cliente
+        public void cargarConsumosAutomaticos(int mes, int anio) {
+            Random random = new Random();
+            for (Registrador registrador : registradores) {
+                for (int semana = 1; semana <= 4; semana++) {
+                    int dia = (semana - 1) * 7 + 1;
+                    if (dia > 28) dia = 28;
+                    int hora = random.nextInt(24);
+                    LocalDateTime fecha = LocalDateTime.of(anio, mes, dia, hora, 0);
+                    double cantidadKWH = 100 + (899 * random.nextDouble());
+                    Consumo consumo = new Consumo(fecha, cantidadKWH);
+                    registrador.agregarConsumo(consumo);
+                }
+            }
+        }
     }
-
-
 
     public static class Registrador {
         private String numeroIdentificacion;
@@ -134,10 +146,19 @@ public class Modelo {
         public int hashCode() {
             return Objects.hash(numeroIdentificacion);
         }
+
+        // Método: Cambiar consumo específico
+        public boolean cambiarConsumo(LocalDateTime fechaObjetivo, double nuevaCantidadKWH) {
+            for (Consumo consumo : consumos) {
+                LocalDateTime fecha = consumo.getFechaHora();
+                if (fecha.equals(fechaObjetivo)) {
+                    consumo.setCantidadKWH(nuevaCantidadKWH);
+                    return true; // Cambio exitoso
+                }
+            }
+            return false; // No se encontró el consumo
+        }
     }
-
-
-
 
     public static class Consumo {
         private LocalDateTime fechaHora;
@@ -185,86 +206,6 @@ public class Modelo {
                 case 3 -> cantidadKWH * 500;
                 default -> 0;
             };
-        }
-    }
-
-
-
-
-    public static class VisualizadorDatos {
-
-        public static void mostrarDatosClientes(List<Cliente> clientes) {
-            if (clientes.isEmpty()) {
-                System.out.println("No hay clientes registrados.");
-                return;
-            }
-
-            for (Cliente cliente : clientes) {
-                System.out.println("====================================");
-                System.out.println("Cliente:");
-                System.out.println(" - ID único: " + cliente.getNumeroUnicoIdentificacion());
-                System.out.println(" - Tipo de identificación: " + cliente.getTipoIdentificacion());
-                System.out.println(" - Correo electrónico: " + cliente.getCorreoElectronico());
-                System.out.println(" - Dirección física: " + cliente.getDireccionFisica());
-
-                List<Registrador> registradores = cliente.getRegistradores();
-                if (registradores.isEmpty()) {
-                    System.out.println("   No hay registradores asociados.");
-                } else {
-                    for (Registrador registrador : registradores) {
-                        System.out.println("   ------------------------------------");
-                        System.out.println("   Registrador:");
-                        System.out.println("    - Nº Identificación: " + registrador.getNumeroIdentificacion());
-                        System.out.println("    - Dirección: " + registrador.getDireccion());
-                        System.out.println("    - Ciudad: " + registrador.getCiudad());
-
-                        List<Consumo> consumos = registrador.getConsumos();
-                        if (consumos.isEmpty()) {
-                            System.out.println("      No hay consumos registrados.");
-                        } else {
-                            for (Consumo consumo : consumos) {
-                                System.out.println("      * Consumo:");
-                                System.out.println("         - Fecha y hora: " + consumo.getFechaHora());
-                                System.out.println("         - Cantidad KWH: " + consumo.getCantidadKWH());
-                                System.out.println("         - Franja: " + consumo.getFranja());
-                                System.out.println("         - Valor calculado: " + consumo.calcularValor());
-                            }
-                        }
-                    }
-                }
-                System.out.println("====================================");
-            }
-        }
-    }
-
-
-
-
-    public static class EditorCliente {
-
-        public static void cambiarTipoIdentificacion(Cliente cliente, String nuevoTipo) {
-            cliente.setTipoIdentificacion(nuevoTipo);
-        }
-
-        public static void cambiarCorreoElectronico(Cliente cliente, String nuevoCorreo) {
-            cliente.setCorreoElectronico(nuevoCorreo);
-        }
-
-        public static void cambiarDireccionFisica(Cliente cliente, String nuevaDireccion) {
-            cliente.setDireccionFisica(nuevaDireccion);
-        }
-    }
-
- 
-
-    public static class EditorRegistrador {
-
-        public static void cambiarDireccion(Registrador registrador, String nuevaDireccion) {
-            registrador.setDireccion(nuevaDireccion);
-        }
-
-        public static void cambiarCiudad(Registrador registrador, String nuevaCiudad) {
-            registrador.setCiudad(nuevaCiudad);
         }
     }
 }
