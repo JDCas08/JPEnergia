@@ -76,7 +76,7 @@ public class Modelo {
             return Objects.hash(numeroUnicoIdentificacion);
         }
 
-        // Método: Cargar consumos automáticos para este cliente
+        
         public void cargarConsumosAutomaticos(int mes, int anio) {
             Random random = new Random();
             for (Registrador registrador : registradores) {
@@ -90,6 +90,78 @@ public class Modelo {
                     registrador.agregarConsumo(consumo);
                 }
             }
+        }
+
+     
+        public double obtenerConsumoMinimo(int mes, int anio) {
+            double consumoMinimo = Double.MAX_VALUE;
+            for (Registrador registrador : registradores) {
+                for (Consumo consumo : registrador.getConsumos()) {
+                    if (consumo.getFechaHora().getMonthValue() == mes && consumo.getFechaHora().getYear() == anio) {
+                        if (consumo.getCantidadKWH() < consumoMinimo) {
+                            consumoMinimo = consumo.getCantidadKWH();
+                        }
+                    }
+                }
+            }
+            return consumoMinimo == Double.MAX_VALUE ? 0 : consumoMinimo;
+        }
+
+      
+        public double obtenerConsumoMaximo(int mes, int anio) {
+            double consumoMaximo = Double.MIN_VALUE;
+            for (Registrador registrador : registradores) {
+                for (Consumo consumo : registrador.getConsumos()) {
+                    if (consumo.getFechaHora().getMonthValue() == mes && consumo.getFechaHora().getYear() == anio) {
+                        if (consumo.getCantidadKWH() > consumoMaximo) {
+                            consumoMaximo = consumo.getCantidadKWH();
+                        }
+                    }
+                }
+            }
+            return consumoMaximo == Double.MIN_VALUE ? 0 : consumoMaximo;
+        }
+
+        public double[] obtenerConsumoPorFranjas(int mes, int anio) {
+            double[] consumoPorFranjas = new double[3]; 
+            for (Registrador registrador : registradores) {
+                for (Consumo consumo : registrador.getConsumos()) {
+                    if (consumo.getFechaHora().getMonthValue() == mes && consumo.getFechaHora().getYear() == anio) {
+                        int franja = consumo.getFranja();
+                        if (franja > 0 && franja <= 3) {
+                            consumoPorFranjas[franja - 1] += consumo.getCantidadKWH();
+                        }
+                    }
+                }
+            }
+            return consumoPorFranjas;
+        }
+
+       
+        public double[] obtenerConsumoPorDias(int mes, int anio) {
+            double[] consumoPorDias = new double[31]; 
+            for (Registrador registrador : registradores) {
+                for (Consumo consumo : registrador.getConsumos()) {
+                    if (consumo.getFechaHora().getMonthValue() == mes && consumo.getFechaHora().getYear() == anio) {
+                        int dia = consumo.getFechaHora().getDayOfMonth();
+                        consumoPorDias[dia - 1] += consumo.getCantidadKWH();
+                    }
+                }
+            }
+            return consumoPorDias;
+        }
+
+  
+        public double calcularValorFactura(int mes, int anio) {
+            double totalFactura = 0;
+            for (Registrador registrador : registradores) {
+                for (Consumo consumo : registrador.getConsumos()) {
+                    if (consumo.getFechaHora().getMonthValue() == mes && consumo.getFechaHora().getYear() == anio) {
+                        totalFactura += consumo.calcularValor();
+                    }
+                }
+            }
+            return totalFactura;
         }
     }
 
@@ -147,16 +219,16 @@ public class Modelo {
             return Objects.hash(numeroIdentificacion);
         }
 
-        // Método: Cambiar consumo específico
+   
         public boolean cambiarConsumo(LocalDateTime fechaObjetivo, double nuevaCantidadKWH) {
             for (Consumo consumo : consumos) {
                 LocalDateTime fecha = consumo.getFechaHora();
                 if (fecha.equals(fechaObjetivo)) {
                     consumo.setCantidadKWH(nuevaCantidadKWH);
-                    return true; // Cambio exitoso
+                    return true; 
                 }
             }
-            return false; // No se encontró el consumo
+            return false; 
         }
     }
 
